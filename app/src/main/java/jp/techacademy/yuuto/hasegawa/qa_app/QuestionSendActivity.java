@@ -139,9 +139,11 @@ public class QuestionSendActivity extends AppCompatActivity implements View.OnCl
             im.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
             DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference genreRef = dataBaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+            DatabaseReference genreRef = dataBaseReference.child(Const.ContentsPATH);
 
             Map<String, String> data = new HashMap<String, String>();
+
+            data.put("genre",String.valueOf(mGenre));
 
             // UID
             data.put("uid", FirebaseAuth.getInstance().getCurrentUser().getUid());

@@ -62,7 +62,7 @@ public class AnswerSendActivity extends AppCompatActivity implements View.OnClic
         im.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
         DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference answerRef = dataBaseReference.child(Const.ContentsPATH).child(String.valueOf(mQuestion.getGenre())).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
+        DatabaseReference answerRef = dataBaseReference.child(Const.ContentsPATH).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
 
         Map<String, String> data = new HashMap<String, String>();
 

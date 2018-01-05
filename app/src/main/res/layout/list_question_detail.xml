@@ -19,7 +19,8 @@
         android:id="@+id/bodyTextView"
         android:inputType="textMultiLine"
         android:layout_alignTop="@+id/imageView"
-        android:layout_toEndOf="@+id/imageView" />
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_toRightOf="@+id/imageView"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -28,6 +29,16 @@
         android:text="Small Text"
         android:id="@+id/nameTextView"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/favoriteButton"
+        android:text="fav"
+        android:layout_toLeftOf="@+id/nameTextView"
+        android:layout_alignTop="@id/nameTextView"
         android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

@@ -19,6 +19,8 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.AdapterView;
 
+import android.util.Log;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -26,6 +28,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,10 +39,13 @@ public class MainActivity extends AppCompatActivity {
     private int mGenre = 0;
 
     private DatabaseReference mDatabaseReference;
-    private DatabaseReference mGenreRef;
+    private Query mGenreRef;
     private ListView mListView;
     private ArrayList<Question> mQuestionArrayList;
     private QuestionsListAdapter mAdapter;
+
+    FirebaseAuth mAuth;
+    FirebaseUser user;
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
@@ -70,7 +76,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
+            ArrayList<HashMap> favoritesArrayList = new ArrayList<HashMap>();
+            HashMap<String,Boolean> favoritesData = new HashMap<String,Boolean>();
+            HashMap favoritesMap = (HashMap) map.get("favorites");
+            if (favoritesMap != null ) {
+                for (Object key : favoritesMap.keySet()) {
+                    Boolean temp = (Boolean) favoritesMap.get(String.valueOf(key));
+                    favoritesData.put(String.valueOf(key),temp);
+                }
+            }
+
+            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList, favoritesData);
             mQuestionArrayList.add(question);
             mAdapter.notifyDataSetChanged();
         }
@@ -124,6 +140,11 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+/*
+        if (user == null){
+            Item favItem = (Item) findViewById(R.id.nav_fav);
+        }
+*/
         // --- ここから ---
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -159,6 +180,17 @@ public class MainActivity extends AppCompatActivity {
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        MenuItem favoMenuItem = menu.findItem(R.id.nav_fav);
+        mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
+
+        if (user == null){
+            favoMenuItem.setVisible(false);
+        }else{
+            favoMenuItem.setVisible(true);
+        }
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
@@ -176,6 +208,9 @@ public class MainActivity extends AppCompatActivity {
                 } else if (id == R.id.nav_compter) {
                     mToolbar.setTitle("コンピューター");
                     mGenre = 4;
+                } else if (id == R.id.nav_fav) {
+                    mToolbar.setTitle("お気に入り");
+                    mGenre = 5;
                 }
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -189,7 +224,14 @@ public class MainActivity extends AppCompatActivity {
                 if (mGenreRef != null) {
                     mGenreRef.removeEventListener(mEventListener);
                 }
-                mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+
+                if (mGenre <= 4) {
+                    mGenreRef = mDatabaseReference.child(Const.ContentsPATH).orderByChild("genre").equalTo(String.valueOf(mGenre));
+                } else if (mGenre == 5){
+                    if (user != null) {
+                        mGenreRef = mDatabaseReference.child(Const.ContentsPATH).orderByChild("favorites/" + String.valueOf(user.getUid())).equalTo(true);
+                    }
+                }
                 mGenreRef.addChildEventListener(mEventListener);
 
                 return true;
